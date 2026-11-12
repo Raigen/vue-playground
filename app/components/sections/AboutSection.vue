@@ -38,6 +38,37 @@ defineProps<{ profile: Profile }>()
       </li>
     </ul>
 
+    <dl class="mt-8 grid gap-4 sm:grid-cols-2">
+      <div
+        v-for="fact in profile.facts"
+        :key="fact.label"
+      >
+        <dt class="text-sm font-medium text-slate-500">
+          {{ fact.label }}
+        </dt>
+        <dd class="mt-1">
+          {{ fact.value }}
+        </dd>
+      </div>
+    </dl>
+
+    <div
+      v-if="profile.sideProjects.length"
+      class="mt-10"
+    >
+      <h2 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">
+        Side projects
+      </h2>
+      <div class="grid gap-6">
+        <SectionsProjectCard
+          v-for="project in profile.sideProjects"
+          :key="project.title"
+          :project="project"
+          detailed
+        />
+      </div>
+    </div>
+
     <ul class="mt-8 flex gap-4">
       <li
         v-for="link in profile.links"

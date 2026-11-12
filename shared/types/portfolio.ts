@@ -6,6 +6,11 @@ export interface SocialLink {
   url: string
 }
 
+export interface Fact {
+  label: string
+  value: string
+}
+
 export interface Profile {
   name: string
   role: string
@@ -14,6 +19,9 @@ export interface Profile {
   /** Paragraphs for the about section. */
   bio: string[]
   skills: string[]
+  /** Short key/value facts, e.g. languages and education. */
+  facts: Fact[]
+  sideProjects: Project[]
   links: SocialLink[]
 }
 
@@ -37,6 +45,8 @@ export interface Experience {
   location: string
   summary: string
   projects: Project[]
+  /** Optional "key challenges solved" list, shown on the detail page. */
+  challenges?: string[]
 }
 
 /** Lightweight list item returned by GET /api/experiences */

@@ -8,6 +8,12 @@ const { slug, detailed = false } = defineProps<{
 // Each section fetches its own data – fine with SSR because useFetch dedupes by key
 // and the result is transferred to the client in the payload.
 const { data: experience, status, error } = await useExperience(() => slug)
+
+const OVERVIEW_PROJECT_COUNT = 3
+const visibleProjects = computed(() => {
+  const projects = experience.value?.projects ?? []
+  return detailed ? projects : projects.slice(0, OVERVIEW_PROJECT_COUNT)
+})
 </script>
 
 <template>
@@ -40,11 +46,28 @@ const { data: experience, status, error } = await useExperience(() => slug)
 
       <div class="grid gap-6">
         <SectionsProjectCard
-          v-for="project in experience.projects"
+          v-for="project in visibleProjects"
           :key="project.title"
           :project="project"
           :detailed="detailed"
         />
+      </div>
+
+      <div
+        v-if="detailed && experience.challenges?.length"
+        class="mt-12"
+      >
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+          Key challenges solved
+        </h3>
+        <ul class="mt-4 list-disc space-y-2 pl-5">
+          <li
+            v-for="challenge in experience.challenges"
+            :key="challenge"
+          >
+            {{ challenge }}
+          </li>
+        </ul>
       </div>
 
       <NuxtLink
@@ -52,7 +75,7 @@ const { data: experience, status, error } = await useExperience(() => slug)
         :to="`/work/${experience.slug}`"
         class="mt-6 inline-block font-medium text-brand-600 hover:underline dark:text-brand-400"
       >
-        More about my time at {{ experience.company }} →
+        All {{ experience.projects.length }} highlights from my time at {{ experience.company }} →
       </NuxtLink>
     </template>
   </section>
