@@ -69,26 +69,28 @@ During SSR the API is called **in-process** (no HTTP round trip), the result is 
 2. Adjust the brand colours in `app/assets/css/main.css` (`@theme`).
 3. Set `NUXT_PUBLIC_SITE_URL` when deploying (see `.env.example`).
 
-## Deployment (VPS with Docker)
+## Deployment (VPS with Docker + Pangolin)
 
-The app runs as a Node server in Docker (SSR + API routes), behind Caddy, which handles HTTPS certificates automatically.
+The app runs as a Node server in Docker (SSR + API routes). [Pangolin](https://github.com/fosrl/pangolin), which already runs on the VPS, handles the domain and HTTPS and proxies to the container over a shared Docker network.
 
 ```
 GitHub (push to main) ──► Actions builds image ──► ghcr.io/raigen/vue-playground:latest
                                                           │  docker compose pull
-VPS:  Internet ──► Caddy :80/:443 (HTTPS) ──► app :3000 ◄─┘
+VPS:  Internet ──► Pangolin (HTTPS) ──► portfolio:3000 ◄──┘
+                   └──── Docker network "pangolin" ────┘
 ```
 
 **One-time setup on the VPS**
 
-1. Point your domain's DNS `A`/`AAAA` record to the VPS and open ports 80 and 443.
-2. Copy `compose.yaml` and `Caddyfile` to e.g. `~/portfolio/` and create `.env`:
+1. Find Pangolin's network: `docker network ls` (default name: `pangolin`).
+2. Copy `compose.yaml` to e.g. `~/portfolio/` and create `.env`:
    ```
-   DOMAIN=example.com
    NUXT_PUBLIC_SITE_URL=https://example.com
+   PANGOLIN_NETWORK=pangolin
    ```
 3. If the GHCR package is private: `docker login ghcr.io` with a GitHub token that has `read:packages`.
 4. `docker compose up -d`
+5. In Pangolin, add an HTTP resource for your domain on the local site with target `portfolio`, port `3000`, method `http`.
 
 **Updating**
 
@@ -97,8 +99,6 @@ docker compose pull && docker compose up -d
 ```
 
 Without the registry you can also build directly on the server: `git pull && docker compose up -d --build`.
-
-If the VPS already runs a reverse proxy (Traefik, nginx, …), drop the `caddy` service and route your domain to the `app` container on port 3000 instead.
 
 ## React → Vue cheat sheet
 

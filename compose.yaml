@@ -1,35 +1,27 @@
-# Production setup for a VPS: the Nuxt app plus Caddy as reverse proxy with
-# automatic HTTPS (Let's Encrypt). Configure via a .env file next to this file:
-#   DOMAIN=example.com
+# Production setup for a VPS that already runs Pangolin (https://github.com/fosrl/pangolin).
+# Pangolin terminates HTTPS and proxies to this container over its Docker network.
+#
+# .env next to this file:
 #   NUXT_PUBLIC_SITE_URL=https://example.com
+#   PANGOLIN_NETWORK=pangolin   # optional, see `docker network ls`
+#
+# In Pangolin, create a resource for your domain with target
+#   http://portfolio:3000
 services:
   app:
     image: ghcr.io/raigen/vue-playground:latest
     build: .
+    container_name: portfolio
     restart: unless-stopped
     environment:
       NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:?set NUXT_PUBLIC_SITE_URL in .env}
-    # No published ports: only Caddy talks to the app.
+    # No published ports: only Pangolin reaches the app, via the shared network.
     expose:
       - '3000'
+    networks:
+      - pangolin
 
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    depends_on:
-      app:
-        condition: service_healthy
-    ports:
-      - '80:80'
-      - '443:443'
-      - '443:443/udp' # HTTP/3
-    environment:
-      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  caddy_data:
-  caddy_config:
+networks:
+  pangolin:
+    name: ${PANGOLIN_NETWORK:-pangolin}
+    external: true

@@ -14,5 +14,4 @@ tests
 .env.*
 Dockerfile
 compose.yaml
-Caddyfile
 README.md
