@@ -1,0 +1,35 @@
+# Production setup for a VPS: the Nuxt app plus Caddy as reverse proxy with
+# automatic HTTPS (Let's Encrypt). Configure via a .env file next to this file:
+#   DOMAIN=example.com
+#   NUXT_PUBLIC_SITE_URL=https://example.com
+services:
+  app:
+    image: ghcr.io/raigen/vue-playground:latest
+    build: .
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:?set NUXT_PUBLIC_SITE_URL in .env}
+    # No published ports: only Caddy talks to the app.
+    expose:
+      - '3000'
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp' # HTTP/3
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

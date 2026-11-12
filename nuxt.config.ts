@@ -22,9 +22,12 @@ export default defineNuxtConfig({
     },
   },
 
-  // Pre-render the landing page at build time; API routes stay dynamic.
+  // Server-render pages on demand and cache the result for 10 minutes
+  // (stale-while-revalidate). Unlike `prerender`, this picks up runtime env
+  // vars such as NUXT_PUBLIC_SITE_URL from the container.
   routeRules: {
-    '/': { prerender: true },
+    '/': { swr: 600 },
+    '/work/**': { swr: 600 },
   },
 
   compatibilityDate: '2026-11-01',
